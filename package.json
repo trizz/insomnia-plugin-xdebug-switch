@@ -1,5 +1,5 @@
 {
-  "name": "insomna-plugin-xdebug-switch",
+  "name": "insomnia-plugin-xdebug-switch",
   "version": "0.1.0",
   "main": "./src/xdebug.js",
   "author": "Tristan Siebers <me@trizz.io>",
