@@ -1,0 +1,30 @@
+{
+  "name": "insomna-plugin-xdebug-switch",
+  "version": "0.1.0",
+  "main": "./src/xdebug.js",
+  "author": "Tristan Siebers <me@trizz.io>",
+  "license": "MIT",
+  "insomnia": {
+    "name": "insomna-plugin-xdebug-switch",
+    "description": "Easy enable/disable Xdebug and/or the Xdebug profiler."
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "description": "Insomnia REST Client plugin for Xdebug.",
+  "scripts": {
+    "debug-server": "node debug-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/trizz/insomnia-plugin-xdebug-switch.git"
+  },
+  "keywords": [
+    "insomnia",
+    "xdebug"
+  ],
+  "bugs": {
+    "url": "https://github.com/trizz/insomnia-plugin-xdebug-switch/issues"
+  },
+  "homepage": "https://github.com/trizz/insomnia-plugin-xdebug-switch#readme"
+}

@@ -1,0 +1,123 @@
+class Xdebug {
+  /**
+   * Construct the Xdebug class.
+   */
+  constructor() {
+    /*
+     * The friendly element is the (unique) class name of the element that is being used
+     * to determine the position of the Xdebug switches.
+     */
+    this.friendlyElement = 'urlbar__send-btn';
+    this.ideKey = 'INSOMNIA';
+    this.states = { xdebug: false, profiler: false };
+    this.style = require('./styles.js');
+
+    // Only proceed when the Insomnia interface is loaded.
+    let checkIfAppIsReady = setInterval(() => {
+      if (document.getElementsByClassName(this.friendlyElement).length) {
+        // When the friendly element is loaded, remove timer and render the buttons.
+        clearInterval(checkIfAppIsReady);
+        this.render();
+      }
+    }, 100);
+  }
+
+  /**
+   * Render the Xdebug switches left of the 'Send' button.
+   */
+  render() {
+    // Remove all existing instances of the rendered switches.
+    Xdebug.remove('xdebugSwitchContainer');
+
+    // Create the HTML container containing the switches.
+    let xdebugSwitchContainer = document.createElement('div');
+    xdebugSwitchContainer.style.cssText = this.style.container();
+    xdebugSwitchContainer.classList.add('xdebugSwitchContainer');
+
+    // Create the switches and add them to the container.
+    let xdebugSwitch = this.renderSwitch('xdebug', 'bug', 'bug');
+    let profilerSwitch = this.renderSwitch('profiler', 'hourglass-end', 'hourglass-start');
+
+    xdebugSwitchContainer.append(xdebugSwitch);
+    xdebugSwitchContainer.append(profilerSwitch);
+
+    // The button container must be placed in the parent of the 'send button' parent.
+    let friendlyElementParent = document.getElementsByClassName(this.friendlyElement)[0].parentNode;
+    friendlyElementParent.parentNode.insertBefore(xdebugSwitchContainer, friendlyElementParent);
+  }
+
+  /**
+   * Render a switch.
+   *
+   * @param {string} type The switch type.
+   * @param {string} iconOn The font-awesome icon name when the switch is on (without 'fa').
+   * @param {string} iconOff The font-awesome icon name when the switch is off (without 'fa').
+   * @returns {HTMLElement} The created HTML element.
+   */
+  renderSwitch(type, iconOn, iconOff) {
+    let newSwitch = document.createElement('span');
+    newSwitch.style.cssText = this.style.switch();
+
+    newSwitch.innerHTML = this.states[type] ?
+      `<i class="fa fa-${iconOn}" style="color: var(--color-success)">` :
+      `<i class="fa fa-${iconOff}">`;
+
+    newSwitch.onclick = () => {
+      this.states[type] = !this.states[type];
+      this.render();
+      this.setXdebugCookie();
+    };
+
+    return newSwitch;
+  }
+
+  /**
+   * Based on the active switches, set the correct cookies to send along
+   * with the request.
+   */
+  setXdebugCookie() {
+    // There must be a default value to enable 'toggling' Xdebug.
+    let cookieName = 'INSOMNIA-XDEBUG', cookieData = 'NO VALUE';
+
+    if (this.states.xdebug && this.states.profiler) {
+      /*
+       *  Because it isn't possible (or I haven't found out how) to
+       *  send multiple cookies through the requestHooks, a bit of
+       *  creativity is needed to send both Xdebug triggers.
+       */
+      cookieName = 'XDEBUG_PROFILE=1;XDEBUG_SESSION';
+      cookieData = this.ideKey;
+    } else if (this.states.xdebug && !this.states.profiler) {
+      cookieName = 'XDEBUG_SESSION';
+      cookieData = this.ideKey;
+    } else if (!this.states.xdebug && this.states.profiler) {
+      cookieName = 'XDEBUG_PROFILE';
+      cookieData = 1;
+    }
+
+    // Add the created cookie to the Insomnia request.
+    module.exports.requestHooks = [
+      context => {
+        context.request.setCookie(cookieName, cookieData);
+      },
+    ];
+  }
+
+  /**
+   * Remove all element with the given class name.
+   *
+   * @param className The class names of the element(s) to remove.
+   */
+  static remove(className) {
+    let elementsToRemove = document.getElementsByClassName(className);
+
+    if (elementsToRemove.length > 0) {
+      for (let i = 0; i < elementsToRemove.length; i++) {
+        elementsToRemove[i].remove();
+      }
+    }
+  }
+}
+
+// Load the plugin.
+new Xdebug();
