@@ -7,19 +7,37 @@ class Xdebug {
      * The friendly element is the (unique) class name of the element that is being used
      * to determine the position of the Xdebug switches.
      */
-    this.friendlyElement = 'urlbar__send-btn';
+    this.friendlyElement = 'button.urlbar__send-btn';
+    this.mutationObservers = ['div.sidebar__menu', 'ul.sidebar__list-root'];
     this.ideKey = 'INSOMNIA';
     this.states = { xdebug: false, profiler: false };
     this.style = require('./styles.js');
 
     // Only proceed when the Insomnia interface is loaded.
-    let checkIfAppIsReady = setInterval(() => {
-      if (document.getElementsByClassName(this.friendlyElement).length) {
-        // When the friendly element is loaded, remove timer and render the buttons.
+    const checkIfAppIsReady = setInterval(() => {
+      if (document.querySelector(this.friendlyElement) !== null) {
+        // When the friendly element is loaded remove timer and initialize the plugin.
         clearInterval(checkIfAppIsReady);
-        this.render();
+        this.initialize();
       }
     }, 100);
+  }
+
+  /**
+   * Initialize the plugin.
+   */
+  initialize() {
+    // Render the buttons.
+    this.render();
+
+    // Create the observers to re-render the buttons.
+    const observerOptions = { attributes: true, subtree: true, childList: true, characterData: true };
+    const observer = new MutationObserver(() => window.xdebug.render());
+
+    // Add observers to the specified elements.
+    for (let i = 0; i < this.mutationObservers.length; i++) {
+      observer.observe(document.querySelector(this.mutationObservers[i]), observerOptions);
+    }
   }
 
   /**
@@ -42,7 +60,7 @@ class Xdebug {
     xdebugSwitchContainer.append(profilerSwitch);
 
     // The button container must be placed in the parent of the 'send button' parent.
-    let friendlyElementParent = document.getElementsByClassName(this.friendlyElement)[0].parentNode;
+    let friendlyElementParent = document.querySelector(this.friendlyElement).parentNode;
     friendlyElementParent.parentNode.insertBefore(xdebugSwitchContainer, friendlyElementParent);
   }
 
@@ -130,4 +148,4 @@ class Xdebug {
 }
 
 // Load the plugin.
-new Xdebug();
+window.xdebug = new Xdebug();
