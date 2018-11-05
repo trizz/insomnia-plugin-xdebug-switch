@@ -72,10 +72,26 @@ class Xdebug {
   }
 
   /**
-   * Based on the active switches, set the correct cookies to send along
-   * with the request.
+   * Append the cookies to the request.
    */
   setXdebugCookie() {
+    // Add the created cookie to the Insomnia request.
+    module.exports.requestHooks = [
+      context => {
+        const cookie = this.getCookies(context);
+        context.request.setCookie(cookie.name, cookie.data);
+      },
+    ];
+  }
+
+  /**
+   * Based on the active switches, create the correct cookies to send along
+   * with the request.
+   */
+  getCookies(context) {
+    // Get the IDE key if configured in the environment, or the default IDE key.
+    const ideKey = context.request.getEnvironmentVariable('ide-key') || this.ideKey;
+
     // There must be a default value to enable 'toggling' Xdebug.
     let cookieName = 'INSOMNIA-XDEBUG', cookieData = 'NO VALUE';
 
@@ -86,23 +102,17 @@ class Xdebug {
        *  creativity is needed to send both Xdebug triggers.
        */
       cookieName = 'XDEBUG_PROFILE=1;XDEBUG_SESSION';
-      cookieData = this.ideKey;
+      cookieData = ideKey;
     } else if (this.states.xdebug && !this.states.profiler) {
       cookieName = 'XDEBUG_SESSION';
-      cookieData = this.ideKey;
+      cookieData = ideKey;
     } else if (!this.states.xdebug && this.states.profiler) {
       cookieName = 'XDEBUG_PROFILE';
       cookieData = 1;
     }
 
-    // Add the created cookie to the Insomnia request.
-    module.exports.requestHooks = [
-      context => {
-        context.request.setCookie(cookieName, cookieData);
-      },
-    ];
+    return { name: cookieName, data: cookieData };
   }
-
   /**
    * Remove all element with the given class name.
    *

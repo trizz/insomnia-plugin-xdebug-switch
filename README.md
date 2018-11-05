@@ -7,4 +7,9 @@ switch between [running the debugger](https://xdebug.org/docs/remote) and runnin
 
 ![](./screenshot010.png)
 
-This plugin is inspired by the [insomnia-plugin-xdebug](https://gitlab.com/stoempdev/insomnia-plugin-xdebug) plugin.
+### Setting the IDE Key
+By default the Xdebug IDE key is set to `INSOMNIA`. In most cases there's no need to change this,
+but if you'd like to use your own IDE key, just add the key `ide-key` with as value your 
+IDE key to your environment. For example: `{ "ide-key": "PHPSTORM" }`.
+
+> This plugin is inspired by the [insomnia-plugin-xdebug](https://gitlab.com/stoempdev/insomnia-plugin-xdebug) plugin.
